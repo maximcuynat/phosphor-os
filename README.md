@@ -3,18 +3,31 @@
 Faux système d'exploitation des années 1980 dans le navigateur : écran cathodique vert 80 × 25, 100 % clavier, interface en anglais.
 Spécifications : `PHOSPHOR_OS_BRIEF.md` et le canevas « PHOSPHOR OS » (25 planches).
 
-En ligne : https://maximcuynat.github.io/phosphor-os/ (publié par `.github/workflows/pages.yml` à chaque push sur `main`).
+En ligne : https://maximcuynat.github.io/phosphor-os/ (publié par `.github/workflows/pages.yml` à chaque tag de version `vX.Y.Z`).
 
 ## Lancer
 
 ```sh
 npm install
 npm run dev        # http://localhost:5173
-npm test           # Vitest (98 tests)
+npm test           # Vitest (99 tests)
 npm run build      # site statique dans dist/, sans dépendance réseau
 ```
 
 L'état complet est sauvegardé dans `localStorage` (clé `phosphor.state.v1`). Pour repartir du disque d'origine, effacer cette clé (console du navigateur : `localStorage.removeItem('phosphor.state.v1')`).
+
+## Publier une version
+
+```sh
+make deploy                    # interactif
+make deploy BUMP=minor YES=1   # sans question
+make deploy-dry                # simulation, rien n'est modifié
+make tags                      # versions publiées
+```
+
+`make deploy` vérifie qu'on est sur `main`, à jour et sans modification en attente, propose le numéro de version d'après les commits (`feat` : mineure, `fix` et autres : correctif, `!` : majeure), lance typecheck, tests et build, met à jour `package.json` et `CHANGELOG.md`, crée le commit `chore(release): vX.Y.Z` et le tag `vX.Y.Z`, puis pousse. Le tag déclenche la mise en ligne. Si `gh` est installé, il propose aussi la release GitHub et le suivi du déploiement.
+
+La CI (`.github/workflows/ci.yml`) lance typecheck, tests et build à chaque push sur `main` et sur chaque PR. `make` seul liste toutes les commandes.
 
 ## Premiers pas
 
