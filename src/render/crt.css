@@ -1,0 +1,168 @@
+/* PHOSPHOR OS: CRT look. Colours come from CSS variables set by theme.ts. */
+
+:root {
+  --bg: #031407;
+  --bg-center: #062a10;
+  --bg-edge: #010801;
+  --fg: #33ff66;
+  --bright: #7dff9a;
+  --dim: #23a84a;
+  --bar: #1a7a36;
+  --bar-text: #c8ffd6;
+  --rgb: 51, 255, 102;
+  --glow: 0 0 3px rgba(51, 255, 102, .85), 0 0 12px rgba(51, 255, 102, .35);
+  --blink: 1060ms;
+  /* Cell size: set by dom.ts after measuring the font. */
+  --cw: 12px;
+  --ch: 25px;
+  --ls: 0px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  background: #000;
+  overflow: hidden;
+  cursor: none;
+  user-select: none;
+}
+
+#monitor {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+/* The tube: 80 x 25 cells plus padding, scaled to fit the window. */
+.crt {
+  position: relative;
+  width: calc(var(--cw) * 80 + 96px);
+  height: calc(var(--ch) * 25 + 80px);
+  padding: 40px 48px;
+  background: radial-gradient(ellipse at center, var(--bg-center) 0%, var(--bg) 62%, var(--bg-edge) 100%);
+  color: var(--fg);
+  font-family: 'VT323', 'IBM Plex Mono', monospace;
+  font-size: 22px;
+  line-height: var(--ch);
+  text-shadow: var(--glow);
+  overflow: hidden;
+  border-radius: 18px;
+  transform-origin: center center;
+  flex-shrink: 0;
+}
+
+.crt.saver { background: var(--bg-edge); }
+.crt.off { background: #000; }
+.crt.off > * { visibility: hidden; }
+
+.grid {
+  position: relative;
+  width: calc(var(--cw) * 80);
+  height: calc(var(--ch) * 25);
+}
+
+.layer { position: absolute; inset: 0; }
+
+.text .row {
+  height: var(--ch);
+  white-space: pre;
+  letter-spacing: var(--ls);
+}
+
+/* Cell styles */
+.s-b { color: var(--bright); }
+.s-d { color: var(--dim); }
+.s-i { background: var(--fg); color: var(--bg); text-shadow: none; }
+.s-ib { background: var(--bright); color: var(--bg); text-shadow: none; box-shadow: 0 0 10px rgba(var(--rgb), .6); }
+.s-k { background: var(--bar); color: var(--bar-text); text-shadow: none; }
+.s-f { opacity: .5; }
+.s-u { text-decoration: underline; }
+.s-x { color: transparent; text-shadow: none; }
+
+/* Overlays */
+.ov { position: absolute; pointer-events: none; }
+.ov.box { border: 4px double var(--fg); }
+.ov.box.single { border: 2px solid var(--fg); }
+.ov.box.glow { box-shadow: 0 0 8px rgba(var(--rgb), .35); }
+.ov.t-b { border-color: var(--bright); }
+.ov.t-d { border-color: var(--dim); }
+.ov.t-k { border-color: var(--bar); }
+.ov.rect { background: var(--fg); }
+.ov.rect.t-b { background: var(--bright); }
+.ov.rect.t-d { background: var(--dim); }
+.ov.rect.t-k { background: var(--bar); }
+.ov.rect.t-bg { background: var(--bg); }
+.ov.rect.glow { box-shadow: 0 0 8px rgba(var(--rgb), .55); }
+.ov.rect.blocks {
+  background: repeating-linear-gradient(to right, var(--fg) 0, var(--fg) 8px, transparent 8px, transparent 11px);
+}
+.ov.rect.hatch {
+  background: repeating-linear-gradient(45deg, var(--fg) 0, var(--fg) 3px, transparent 3px, transparent 7px);
+}
+.ov.rect.t-k.hatch { background: repeating-linear-gradient(45deg, var(--bar) 0, var(--bar) 3px, transparent 3px, transparent 7px); }
+.ov.hline { height: 2px; background: var(--dim); }
+.ov.hline.t-k { background: var(--bar); }
+.ov.hline.t-n { background: var(--fg); }
+.ov.bar { border: 2px solid var(--dim); padding: 2px; }
+.ov.bar.double { border: 3px double var(--fg); box-shadow: 0 0 8px rgba(var(--rgb), .35); }
+.ov.bar > i {
+  display: block;
+  height: 100%;
+  background: repeating-linear-gradient(to right, var(--fg) 0, var(--fg) 8px, transparent 8px, transparent 11px);
+  box-shadow: 0 0 8px rgba(var(--rgb), .45);
+}
+.ov.bar.double > i {
+  background: repeating-linear-gradient(to right, var(--fg) 0, var(--fg) 14px, transparent 14px, transparent 18px);
+}
+
+/* Cursor: solid block, blinking */
+.cursor {
+  position: absolute;
+  width: var(--cw);
+  height: calc(var(--ch) - 4px);
+  margin-top: 2px;
+  background: var(--fg);
+  box-shadow: 0 0 8px rgba(var(--rgb), .8);
+  animation: blink var(--blink) steps(1) infinite;
+}
+.cursor.under { height: 3px; margin-top: calc(var(--ch) - 5px); }
+.cursor.hidden { display: none; }
+@keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+/* Scanlines: 1 px black at 28 % every 3 px, above everything. */
+.scanlines {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(to bottom, rgba(0, 0, 0, .28) 0, rgba(0, 0, 0, .28) 1px, transparent 1px, transparent 3px);
+  z-index: 10;
+}
+.no-scanlines .scanlines { display: none; }
+
+/* Power on [01]: black, dot (120 ms), line (260 ms), screen (420 ms), overbright settling to 100 %. */
+.crt.power-on {
+  animation: tube-on 420ms ease-out both, settle 300ms ease-out 420ms both;
+}
+@keyframes tube-on {
+  0% { transform: var(--scale) scale(0, 0); filter: brightness(0); }
+  28.5% { transform: var(--scale) scale(.012, .018); filter: brightness(3); }
+  62% { transform: var(--scale) scale(1, .008); filter: brightness(2.4); }
+  100% { transform: var(--scale) scale(1, 1); filter: brightness(1.6); }
+}
+@keyframes settle {
+  from { filter: brightness(1.6); }
+  to { filter: brightness(1); }
+}
+/* Power off: the same steps in reverse in 300 ms. */
+.crt.power-off { animation: tube-off 300ms ease-in both; }
+@keyframes tube-off {
+  0% { transform: var(--scale) scale(1, 1); filter: brightness(1); }
+  40% { transform: var(--scale) scale(1, .008); filter: brightness(2.4); }
+  80% { transform: var(--scale) scale(.012, .018); filter: brightness(3); }
+  100% { transform: var(--scale) scale(0, 0); filter: brightness(0); }
+}
