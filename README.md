@@ -3,6 +3,8 @@
 Faux système d'exploitation des années 1980 dans le navigateur : écran cathodique vert 80 × 25, 100 % clavier, interface en anglais.
 Spécifications : `PHOSPHOR_OS_BRIEF.md` et le canevas « PHOSPHOR OS » (25 planches).
 
+En ligne : https://maximcuynat.github.io/phosphor-os/ (publié par `.github/workflows/pages.yml` à chaque push sur `main`).
+
 ## Lancer
 
 ```sh
