@@ -38,27 +38,38 @@ html, body {
   background: #000;
 }
 
-/* The tube: 80 x 25 cells plus padding, scaled to fit the window. */
+/* The glass: fills the whole window with the phosphor ground, glow and scanlines. */
+.tube {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background: radial-gradient(ellipse at center, var(--bg-center) 0%, var(--bg) 62%, var(--bg-edge) 100%);
+  /* darker corners, as on a curved tube */
+  box-shadow: inset 0 0 160px rgba(0, 0, 0, .65);
+  transform-origin: center center;
+}
+
+.tube.saver { background: var(--bg-edge); }
+.tube.off { background: #000; box-shadow: none; }
+.tube.off > * { visibility: hidden; }
+
+/* The 80 x 25 text area, centred in the tube and scaled by dom.ts (fit). */
 .crt {
   position: relative;
   width: calc(var(--cw) * 80 + 96px);
   height: calc(var(--ch) * 25 + 80px);
   padding: 40px 48px;
-  background: radial-gradient(ellipse at center, var(--bg-center) 0%, var(--bg) 62%, var(--bg-edge) 100%);
   color: var(--fg);
   font-family: 'VT323', 'IBM Plex Mono', monospace;
   font-size: 22px;
   line-height: var(--ch);
   text-shadow: var(--glow);
-  overflow: hidden;
-  border-radius: 18px;
   transform-origin: center center;
   flex-shrink: 0;
 }
-
-.crt.saver { background: var(--bg-edge); }
-.crt.off { background: #000; }
-.crt.off > * { visibility: hidden; }
 
 .grid {
   position: relative;
@@ -144,25 +155,26 @@ html, body {
 }
 .no-scanlines .scanlines { display: none; }
 
-/* Power on [01]: black, dot (120 ms), line (260 ms), screen (420 ms), overbright settling to 100 %. */
-.crt.power-on {
+/* Power on [01]: black, dot (120 ms), line (260 ms), screen (420 ms), overbright settling to 100 %.
+   Played on the whole glass, so the dot and the line sit in the middle of the window. */
+.tube.power-on {
   animation: tube-on 420ms ease-out both, settle 300ms ease-out 420ms both;
 }
 @keyframes tube-on {
-  0% { transform: var(--scale) scale(0, 0); filter: brightness(0); }
-  28.5% { transform: var(--scale) scale(.012, .018); filter: brightness(3); }
-  62% { transform: var(--scale) scale(1, .008); filter: brightness(2.4); }
-  100% { transform: var(--scale) scale(1, 1); filter: brightness(1.6); }
+  0% { transform: scale(0, 0); filter: brightness(0); }
+  28.5% { transform: scale(.012, .018); filter: brightness(3); }
+  62% { transform: scale(1, .008); filter: brightness(2.4); }
+  100% { transform: scale(1, 1); filter: brightness(1.6); }
 }
 @keyframes settle {
   from { filter: brightness(1.6); }
   to { filter: brightness(1); }
 }
 /* Power off: the same steps in reverse in 300 ms. */
-.crt.power-off { animation: tube-off 300ms ease-in both; }
+.tube.power-off { animation: tube-off 300ms ease-in both; }
 @keyframes tube-off {
-  0% { transform: var(--scale) scale(1, 1); filter: brightness(1); }
-  40% { transform: var(--scale) scale(1, .008); filter: brightness(2.4); }
-  80% { transform: var(--scale) scale(.012, .018); filter: brightness(3); }
-  100% { transform: var(--scale) scale(0, 0); filter: brightness(0); }
+  0% { transform: scale(1, 1); filter: brightness(1); }
+  40% { transform: scale(1, .008); filter: brightness(2.4); }
+  80% { transform: scale(.012, .018); filter: brightness(3); }
+  100% { transform: scale(0, 0); filter: brightness(0); }
 }

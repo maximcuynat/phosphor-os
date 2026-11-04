@@ -100,6 +100,15 @@ export class SetupScreen {
         render: (s, x, y, st) => chips(s, x, y, ['ON', 'OFF'], st.powerOnEffect ? 'ON' : 'OFF'),
       },
       {
+        section: 'DISPLAY',
+        label: 'STRETCH',
+        change: (st) => (st.stretch = !st.stretch),
+        render: (s, x, y, st) => {
+          chips(s, x, y, ['ON', 'OFF'], st.stretch ? 'ON' : 'OFF');
+          s.put(x + 15, y, 'WIDER ON WIDE SCREENS', 'd');
+        },
+      },
+      {
         section: 'BOOT ORDER',
         label: 'BOOT ORDER',
         change: (st) => (st.bootOrder = st.bootOrder === 'A: C:' ? 'C: A:' : 'A: C:'),
@@ -201,12 +210,12 @@ export class SetupScreen {
       y += f.section === 'PASSWORDS' ? 6 : 2;
     }
     // Preview with the live palette
-    s.box(23, 17, 56, 5, 'k', { single: true });
-    s.put(25, 18, 'PREVIEW', 'd');
-    let px = s.put(25, 19, 'ADMIN@A:\\> DIR    ');
-    px = s.put(px, 19, ' SELECTED ', 'i') + 3;
-    px = s.put(px, 19, 'DIM TEXT', 'd') + 3;
-    s.put(px, 19, 'BRIGHT', 'b');
+    s.box(23, 19, 56, 3, 'k', { single: true });
+    let px = s.put(25, 20, 'PREVIEW', 'd') + 2;
+    px = s.put(px, 20, 'ADMIN@A:\\> DIR ');
+    px = s.put(px, 20, ' SELECTED ', 'i') + 2;
+    px = s.put(px, 20, 'DIM TEXT', 'd') + 2;
+    s.put(px, 20, 'BRIGHT', 'b');
     if (this.msg) s.put(1, 23, this.msg, 'b');
     s.keyBar(24, [
       ['UP/DN', 'SELECT'],

@@ -102,6 +102,8 @@ export interface Settings {
   screensaverMin: number;
   lockOnWake: boolean;
   powerOnEffect: boolean;
+  /** Let the text stretch up to 20 % wider on wide windows. */
+  stretch: boolean;
   bootOrder: string;
 }
 
@@ -135,5 +137,6 @@ export const DEFAULT_SETTINGS: Settings = {
   screensaverMin: 5,
   lockOnWake: true,
   powerOnEffect: true,
+  stretch: false,
   bootOrder: 'A: C:',
 };

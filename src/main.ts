@@ -28,10 +28,11 @@ const os = new OS({
 let themeKey = '';
 function frame(): void {
   const st = os.settings;
-  const key = `${st.phosphor}|${st.glow}|${st.scanlines}|${st.cursorBlinkMs}`;
+  const key = `${st.phosphor}|${st.glow}|${st.scanlines}|${st.cursorBlinkMs}|${st.stretch}`;
   if (key !== themeKey) {
     themeKey = key;
     applyTheme(document.documentElement, st);
+    renderer.setStretch(st.stretch);
   }
   os.render(screen);
   renderer.draw(screen);
