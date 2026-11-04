@@ -47,3 +47,19 @@ describe('DOM renderer', () => {
     expect(text).toContain('ALT+F1 TTY1 ADMIN');
   });
 });
+
+describe('fitting the window', () => {
+  it('keeps the proportions, or stretches up to 20 % wider when STRETCH is on', () => {
+    document.body.innerHTML = '<div id="m"></div>';
+    Object.defineProperty(window, 'innerWidth', { value: 2400, configurable: true });
+    Object.defineProperty(window, 'innerHeight', { value: 705, configurable: true });
+    const r = new DomRenderer(document.getElementById('m')!);
+    expect(r.crt.style.transform).toBe('scale(1.0000, 1.0000)');
+    expect(r.tube.querySelector('.scanlines')).not.toBeNull();
+    r.setStretch(true);
+    expect(r.crt.style.transform).toBe('scale(1.2000, 1.0000)');
+    Object.defineProperty(window, 'innerWidth', { value: 1100, configurable: true });
+    r.fit();
+    expect(r.crt.style.transform).toBe(`scale(${(1100 / 1056).toFixed(4)}, 1.0000)`);
+  });
+});

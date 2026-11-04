@@ -4,13 +4,19 @@
 import { COLS, ROWS, Screen, type Overlay, type Style } from './screen';
 
 const TARGET_CW = 12; // px per column: 80 columns = 960 px
+/** Widest horizontal stretch allowed when STRETCH is on (SETUP). */
+export const MAX_STRETCH = 1.2;
 
 function esc(s: string): string {
   return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 export class DomRenderer {
+  /** Full-window glass: background, glow, scanlines, power animations. */
+  readonly tube: HTMLElement;
+  /** The 80x25 text area, centred and scaled inside the tube. */
   readonly crt: HTMLElement;
+  private stretch = false;
   private rows: HTMLElement[] = [];
   private rowCache: string[] = [];
   private overlayLayer: HTMLElement;
@@ -22,6 +28,8 @@ export class DomRenderer {
 
   constructor(host: HTMLElement) {
     host.innerHTML = '';
+    this.tube = document.createElement('div');
+    this.tube.className = 'tube';
     this.crt = document.createElement('div');
     this.crt.className = 'crt';
     const grid = document.createElement('div');
@@ -42,8 +50,10 @@ export class DomRenderer {
     grid.append(this.overlayLayer, text, this.cursorEl);
     const scan = document.createElement('div');
     scan.className = 'scanlines';
-    this.crt.append(grid, scan);
-    host.appendChild(this.crt);
+    this.crt.append(grid);
+    // Scanlines sit on the tube, not on the scaled grid: always 1 px every 3 px of the real screen.
+    this.tube.append(this.crt, scan);
+    host.appendChild(this.tube);
     this.measure();
     this.fit();
     window.addEventListener('resize', () => this.fit());
@@ -66,31 +76,42 @@ export class DomRenderer {
     this.cw = TARGET_CW;
   }
 
-  /** Scales the tube to fit the window, keeping its proportions. */
+  /**
+   * Scales the 80x25 area to the largest size that fits the window.
+   * Without STRETCH the text keeps its proportions; with it, the width may
+   * grow up to MAX_STRETCH times the height scale to use wide windows.
+   */
   fit(): void {
     const w = this.cw * COLS + 96;
     const h = this.ch * ROWS + 80;
-    const k = Math.min((window.innerWidth - 24) / w, (window.innerHeight - 24) / h);
-    const s = `scale(${Math.max(0.3, k).toFixed(4)})`;
-    this.crt.style.setProperty('--scale', s);
-    this.crt.style.transform = s;
+    const kx = window.innerWidth / w;
+    const ky = window.innerHeight / h;
+    const k = Math.max(0.3, Math.min(kx, ky));
+    const sx = this.stretch ? Math.max(k, Math.min(kx, k * MAX_STRETCH)) : k;
+    this.crt.style.transform = `scale(${sx.toFixed(4)}, ${k.toFixed(4)})`;
+  }
+
+  setStretch(on: boolean): void {
+    if (on === this.stretch) return;
+    this.stretch = on;
+    this.fit();
   }
 
   /** Plays a CSS class animation on the tube and resolves when done. */
   animate(cls: 'power-on' | 'power-off', ms: number): Promise<void> {
-    this.crt.classList.remove('power-on', 'power-off', 'off');
-    void this.crt.offsetWidth; // restart the animation
-    this.crt.classList.add(cls);
+    this.tube.classList.remove('power-on', 'power-off', 'off');
+    void this.tube.offsetWidth; // restart the animation
+    this.tube.classList.add(cls);
     return new Promise((res) =>
       setTimeout(() => {
-        this.crt.classList.remove(cls);
+        this.tube.classList.remove(cls);
         res();
       }, ms),
     );
   }
 
   setOff(off: boolean): void {
-    this.crt.classList.toggle('off', off);
+    this.tube.classList.toggle('off', off);
   }
 
   draw(s: Screen): void {
@@ -122,8 +143,8 @@ export class DomRenderer {
       }
     }
     if (s.mode !== this.modeCache) {
-      if (this.modeCache) this.crt.classList.remove(this.modeCache);
-      if (s.mode) this.crt.classList.add(s.mode);
+      if (this.modeCache) this.tube.classList.remove(this.modeCache);
+      if (s.mode) this.tube.classList.add(s.mode);
       this.modeCache = s.mode;
     }
   }
